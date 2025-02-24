@@ -1,26 +1,39 @@
-import { GalleryVerticalEnd } from 'lucide-react'
-
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { InputPhone } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useState } from 'react'
+
+
+
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const handleClick = () => {
-    console.log(1)
-    toast('Введите пароль!')
-  }
 
+  const [loginValid, setLoginValid] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+
+    const phone = form.elements.namedItem('phone') as HTMLInputElement;
+    const captcha = form.elements.namedItem('captcha') as HTMLInputElement | null;
+
+    console.log(phone.value);
+    console.log('login submit');
+
+    toast('Упс нужно пойти капчу');
+  };
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col items-center gap-2'>
-            <a
+            {/* <a
               href='#'
               className='flex flex-col items-center gap-2 font-medium'
             >
@@ -28,8 +41,8 @@ export function LoginForm({
                 <GalleryVerticalEnd className='size-6' />
               </div>
               <span className='sr-only'>Acme Inc.</span>
-            </a>
-            <h1 className='text-xl font-bold'>Welcome to </h1>
+            </a> */}
+            <h1 className='text-xl font-bold'>Добро пожаловать</h1>
             {/* <div className="text-center text-sm">
               Don&apos;t have an account?{" "}
               <a href="#" className="underline underline-offset-4">
@@ -39,15 +52,15 @@ export function LoginForm({
           </div>
           <div className='flex flex-col gap-6'>
             <div className='grid gap-3'>
-              <Label htmlFor='email'>Phone number</Label>
-              <Input
+              <Label htmlFor='login'>Номер телефона</Label>
+              <InputPhone
                 id='phone'
                 type='phone'
-                placeholder='+7-(***)-**-**'
                 required
+                setLoginValid={setLoginValid}
               />
             </div>
-            <Button onClick={handleClick} type='submit' className='w-full'>
+            <Button type='submit' className='w-full' disabled={!loginValid}>
               Login
             </Button>
           </div>
@@ -79,8 +92,8 @@ export function LoginForm({
         </div>
       </form>
       <div className='text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4'>
-        By clicking continue, you agree to our <a href='#'>Terms of Service</a>{' '}
-        and <a href='#'>Privacy Policy</a>.
+        Нажимая «Продолжить», вы соглашаетесь с нашими <a href='#'>Условиями обслуживания</a>{' '}
+        и <a href='#'>Политикой конфиденциальности</a>.
       </div>
     </div>
   )
