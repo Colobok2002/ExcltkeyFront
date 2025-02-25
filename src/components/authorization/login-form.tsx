@@ -14,10 +14,10 @@ export function LoginForm({
 }: React.ComponentProps<'div'>) {
 
   const [loginValid, setLoginValid] = useState<boolean>(false)
-  const [sendCaptcha, setSendCaptcha] = useState<boolean>(true)
+  // const [sendCaptcha, setSendCaptcha] = useState<boolean>(true)
   const [sendCode, setSendCode] = useState<boolean>(false)
 
-  const [code, setCode] = useState<string>("")
+  const [_, setCode] = useState<string>("")
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     // Тут будет логика с бэка
@@ -27,10 +27,10 @@ export function LoginForm({
     
     e.preventDefault();
 
-    const form = e.currentTarget;
+    // const form = e.currentTarget;
 
-    const phone = form.elements.namedItem('phone') as HTMLInputElement;
-    const captcha = form.elements.namedItem('captcha') as HTMLInputElement | null;
+    // const phone = form.elements.namedItem('phone') as HTMLInputElement;
+    // const captcha = form.elements.namedItem('captcha') as HTMLInputElement | null;
 
     // console.log(phone.value);
 
