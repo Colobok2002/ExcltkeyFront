@@ -1,66 +1,101 @@
-/*
- * :mod:`ApiConnector` -- Класс для работы с Api
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+
+/**
+ * :mod:`ApiConnector` -- Класс для работы с API
  * ===================================
- * .. moduleauthor:: ilya Barinov <i-barinov@it-serv.ru>
+ * .. moduleauthor:: Ilya Barinov <i-barinov@it-serv.ru>
  */
 
-
 export default class ApiConnector {
-    private baseUrl: string;
+    private api: AxiosInstance;
 
     constructor(routUrl: string) {
-        this.baseUrl = `http://localhost:8000/${routUrl}/`;
+        // TODO: API бэка нужно получить из env-переменных (Vite)
+        // https://vite.dev/guide/env-and-mode
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+        this.api = axios.create({
+            baseURL: `${baseUrl}/${routUrl}/`,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        // Автоматическое добавление токена во все запросы
+        this.api.interceptors.request.use((config) => {
+            const token = this.getToken();
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        });
     }
 
     private getToken(): string | null {
-        // TODO: Пока localStorage в будущем думаю в куках хранить
-        return localStorage.getItem('authToken');
+        // TODO: Пока localStorage, в будущем можно хранить в cookies
+        return localStorage.getItem("authToken");
     }
 
-    private async request(method: string, endpoint: string, body: any = null): Promise<any> {
-        const url = `${this.baseUrl}${endpoint}`;
-        
-        const headers: { [key: string]: string } = {
-            'Content-Type': 'application/json',
-        };
+    private setToken(token: string) {
+        localStorage.setItem("authToken", token);
+    }
 
-        const token = this.getToken();
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const options: RequestInit = {
-            method,
-            body: body ? JSON.stringify(body) : null,
-        };
-
+    private async _request<T = any>(
+        method: "GET" | "POST" | "PUT" | "DELETE",
+        endpoint: string,
+        data?: any
+    ): Promise<T> {
         try {
-            const response = await fetch(url, options);
+            const config: AxiosRequestConfig = {
+                method,
+                url: endpoint,
+                data,
+            };
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error during API request:', error);
+            const response: AxiosResponse<T> = await this.api.request(config);
+            return response.data;
+        } catch (error: any) {
+            console.error("API Request Error:", {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+            });
             throw error;
         }
     }
-    public get(endpoint: string): Promise<any> {
-        return this.request('GET', endpoint);
+
+    public async refreshToken(newToken: string): Promise<void> {
+        try {
+
+            if (newToken) {
+                this.setToken(newToken);
+                this.api.defaults.headers["Authorization"] = `Bearer ${newToken}`;
+                console.log("Token successfully refreshed.");
+            } else {
+                throw new Error("No new access token received.");
+            }
+        } catch (error) {
+            console.error("Failed to refresh token:", error);
+            // TODO: На тест нужно ли чистить их
+            // localStorage.removeItem("authToken");
+            // localStorage.removeItem("refreshToken");
+            throw error;
+        }
     }
 
-    public post(endpoint: string, body: any): Promise<any> {
-        return this.request('POST', endpoint, body);
+    public get<T = any>(endpoint: string): Promise<T> {
+        return this._request("GET", endpoint);
     }
 
-    public put(endpoint: string, body: any): Promise<any> {
-        return this.request('PUT', endpoint, body);
+    public post<T = any>(endpoint: string, body: any): Promise<T> {
+        return this._request("POST", endpoint, body);
     }
 
-    public delete(endpoint: string): Promise<any> {
-        return this.request('DELETE', endpoint);
+    public put<T = any>(endpoint: string, body: any): Promise<T> {
+        return this._request("PUT", endpoint, body);
+    }
+
+    public delete<T = any>(endpoint: string): Promise<T> {
+        return this._request("DELETE", endpoint);
     }
 }
-

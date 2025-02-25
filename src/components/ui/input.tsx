@@ -1,5 +1,8 @@
 import { cn } from '@/lib/utils'
 import * as React from 'react'
+import { useState } from "react";
+import OtpInput from "react-otp-input";
+
 
 const _get_input_cls = (className: string | undefined) => {
   // Tw стили для input
@@ -10,6 +13,7 @@ const _get_input_cls = (className: string | undefined) => {
     className
   )
 }
+
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -41,7 +45,6 @@ function InputPhone({ className, type, setLoginValid, ...props }: InputPhoneProp
     let formattedValue = '';
     if (inputValue.length > 0) {
       formattedValue += '+7';
-      console.log(inputValue)
       if (inputValue.length == 1 && inputValue != '7') {
         formattedValue += `-(${inputValue}`;
       }
@@ -70,7 +73,7 @@ function InputPhone({ className, type, setLoginValid, ...props }: InputPhoneProp
   };
 
   return (
-    <input
+    <Input
       type={type}
       data-slot="input"
       className={_get_input_cls(className)}
@@ -78,9 +81,39 @@ function InputPhone({ className, type, setLoginValid, ...props }: InputPhoneProp
       onChange={handleChange}
       placeholder="+7-(999)-999-99-99"
       {...props}
-    />
+    ></Input>
   );
 }
 
 
-export { Input, InputPhone };
+interface InputCodeProps extends React.ComponentProps<'input'> {
+  setCode?: (code: string) => void;
+}
+
+
+export default function InputCode({ setCode }: InputCodeProps) {
+
+  const [renderCode, setRenderCode] = useState<string>("");
+
+  const inputStyles = {
+    height: 50,
+    flex: 1,
+    flexGrow: 1,
+  };
+
+  return (
+    <div style={{ display: "flex", flex: 1, }}>
+      <OtpInput
+        value={renderCode}
+        onChange={(value) => { setRenderCode(value); setCode ? setCode(value) : null }}
+        numInputs={6}
+        renderInput={(props) => <Input {...props} />}
+        inputType="number"
+        inputStyle={inputStyles}
+        containerStyle={{ "flex": 1, display: "flex", justifyContent: "space-between", gap: 7 }}
+      />
+    </div>
+  );
+}
+
+export { Input, InputPhone, InputCode };
